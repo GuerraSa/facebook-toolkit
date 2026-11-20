@@ -17,7 +17,7 @@ Everything can be switched on or off in the settings. **(on)** means it starts s
 Hidden things disappear completely. Nothing is deleted or reported: switch a feature off and they come straight back. A single post or reel you open yourself, from a link or a notification, is never hidden.
 
 ### News feed
-- **Sponsored posts and ads (on):** in the feed, on profiles and Pages, in groups and search, and in the right-hand column. This includes the ads where Facebook scrambles the word "Sponsored" to dodge blockers, and ads that don't show the word at all.
+- **Sponsored posts and ads (on):** in the feed, on profiles and Pages, in groups and search, and in the right-hand column, along with its "Sponsored" heading. This includes the ads where Facebook scrambles the word "Sponsored" to dodge blockers, and ads that don't show the word at all.
 - **Suggested profiles (on):** "People you may know" and "Suggested for you" posts.
 - **Suggested groups (on):** "Suggested groups" boxes, plus posts from groups you haven't joined (the ones with a **Join** button).
 - **Reels (on):** "Reels and short videos" boxes and posts that are reels.

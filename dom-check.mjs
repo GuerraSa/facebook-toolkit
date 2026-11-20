@@ -63,6 +63,7 @@ ${post('adpost', ad('Bike Co', 'https://bikes.example/'))}
 ${post('pic','<svg id="avatar" width="40" height="40"><image href="x.png" width="40" height="40"></image></svg>')}
 </div></div>
 <div role="complementary"><div id="rr-ads"><h3>Sponsored</h3><a href="https://ad.example/">Ad one</a></div><div id="rr-bdays"><h3>Birthdays</h3><span>Ann</span></div></div>
+<div class="rail2"><div id="rr2"><div><h3><span>Sponsored</span></h3></div><div>${ad('Pan Co')}${ad('Hat Co')}</div><div></div></div><div id="contacts2"><h3>Contacts</h3><a href="/bo">Bo</a></div></div>
 <div class="rail"><div id="ad1">${ad('Lamp Co')}</div><div id="ad2">${ad('Shoe Co')}</div><div id="contacts"><h3>Contacts</h3><a href="/ann">Ann</a></div></div>
 <a id="ext" target="_blank" href="https://l.facebook.com/l.php?u=https%3A%2F%2Fexample.org%2F%3Fa%3D1%26fbclid%3Dx&amp;h=AT0">ext</a>
 <a id="int" href="/someone?__cft__[0]=abc&amp;__tn__=R&amp;id=5">int</a>
@@ -70,8 +71,8 @@ ${post('pic','<svg id="avatar" width="40" height="40"><image href="x.png" width=
 <div style="height:3000px"></div>
 </body></html>`;
 const card = (n, title = 'Item', extra = '') => `<div class="cell"><div><a href="/marketplace/item/${n}/?ref=x"><img alt=""><span>$${n}</span><span>${title}</span>${extra}</a></div></div>`;
-const MP = `<!doctype html><html><head></head><body><div role="main"><div class="grid">${card(111)}${card(222)}${card(333)}</div></div></body></html>`;
-const MP_SEARCH = `<!doctype html><html><head></head><body><div role="main"><div class="grid">${card(1, 'Red floor lamp')}${card(2, 'Broken floor lamp')}${card(3, 'Chair')}${card(4, 'Floor lamp', '<span>Sponsored</span>')}<div class="cell" id="mpad">${ad('Lamp Co')}</div></div></div></body></html>`;
+const MP = `<!doctype html><html><head></head><body><div role="main"><div class="grid">${card(111)}${card(222)}${card(333)}</div><div id="desc"><p>Pick up downtown</p><a href="https://l.facebook.com/l.php?u=https%3A%2F%2Fseller.example%2F">seller.example</a></div></div></body></html>`;
+const MP_SEARCH = `<!doctype html><html><head></head><body><div role="main"><div class="grid">${card(1, 'Red floor lamp')}${card(2, 'Broken floor lamp')}${card(3, 'Chair')}${card(4, 'Floor lamp', '<span>Sponsored</span>')}<div class="cell" id="mpad">${ad('Lamp Co')}</div><div class="cell" id="mpad2"><a href="https://travel.example/deals?utm_source=fb"><video></video></a><div role="button" aria-label="Open Menu"></div><a href="https://travel.example/deals"><span>Travel Co</span><span>Bundle and save</span><div>Ad</div></a></div></div></div></body></html>`;
 const MP_ONE = `<!doctype html><html><head></head><body><div role="main"><div class="grid">${card(111)}</div></div></body></html>`;
 const PAGES = { '/marketplace/search': MP_SEARCH, '/marketplace/one': MP_ONE, '/marketplace/': MP };
 
@@ -85,6 +86,7 @@ const CHECKS = [
       'comments ignored when the post is not an article': h('plain') === null, 'words in replies ignored': h('replies') === null,
       'right-column ads hidden': h('rr-ads') === 'sponsored', 'rest of right column kept': h('rr-bdays') === null,
       'post with an ad menu hidden': document.querySelector('#adpost [aria-posinset]').getAttribute('data-fbt-hide') === 'sponsored',
+      '"Sponsored" heading hidden with its ads': h('rr2') === 'sponsored' && h('contacts2') === null,
       'unlabelled side ads hidden one by one': h('ad1') === 'sponsored' && h('ad2') === 'sponsored' && h('contacts') === null,
       'interest prompt hidden, post kept': h('prompt') === 'prompt' && h('prompted') === null,
       'Meta AI row hidden, post kept': h('aiq') === 'meta-ai' && h('aiqpost') === null,
@@ -166,6 +168,7 @@ const CHECKS = [
     xs[1].click();
     r['clicked listing hidden'] = document.querySelectorAll('.cell')[1].getAttribute('data-fbt-hide') === 'listing';
     r['others still visible'] = document.querySelectorAll('[data-fbt-hide]').length === 1;
+    r['website link in a description left alone'] = !document.getElementById('desc').hasAttribute('data-fbt-hide');
     r['saved, keeping the other tab\\'s listing'] = JSON.stringify(__store.hiddenItems) === '["999","222"]';
     __menu(); const c = [...document.querySelectorAll('#fbt-panel button')].find((b) => b.textContent.includes('hidden listings'));
     r['clear button counts both'] = c.textContent.includes(' 2 ');
@@ -180,7 +183,7 @@ const CHECKS = [
   ['Marketplace: sponsored listings and search rules', '/marketplace/search?query=%22floor%20lamp%22%20-broken', `__store.settings = { mpRules: true };`, `
     const h = (n) => document.querySelectorAll('.cell')[n].getAttribute('data-fbt-hide');
     return { 'matching listing kept': h(0) === null, '-broken hides it': h(1) === 'search-rule', '"floor lamp" hides others': h(2) === 'search-rule',
-      'sponsored listing hidden': h(3) === 'sponsored', 'ad tile (no listing link) hidden': h(4) === 'sponsored' };`],
+      'sponsored listing hidden': h(3) === 'sponsored', 'ad tile (no listing link) hidden': h(4) === 'sponsored', '"Ad" tile linking outside Facebook hidden': h(5) === 'sponsored' };`],
 ];
 
 const server = createServer((req, res) => {

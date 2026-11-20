@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Facebook Toolkit
 // @namespace    https://github.com/GuerraSa/facebook-toolkit
-// @version      1.1.0
+// @version      1.1.1
 // @description  A calmer Facebook: hides ads, suggestions, reels, Meta AI and your own filters; cleaner links, video controls, a Marketplace hide button, break reminders and colors.
 // @author       GuerraSa
 // @match        *://*.facebook.com/*
@@ -331,15 +331,16 @@
     }
   }
 
+  const HEADINGS = 'h2, h3, h4, [role="heading"]';
+
   // Ads in the right-hand column: the "Sponsored" heading and everything under it, up to the next section's heading.
   function rightRail() {
     if (!settings.sponsored) return;
-    const H = 'h2, h3, h4, [role="heading"]';
     for (const side of document.querySelectorAll('[role="complementary"]')) {
       for (const el of side.querySelectorAll('span, h2, h3, h4')) {
         if (squash(el.textContent) !== 'sponsored') continue;
-        const own = el.closest(H) ? 1 : 0;
-        climb(el, (p) => p !== side && p.querySelectorAll(H).length <= own).setAttribute(HIDE, 'sponsored');
+        const own = el.closest(HEADINGS) ? 1 : 0;
+        climb(el, (p) => p !== side && p.querySelectorAll(HEADINGS).length <= own).setAttribute(HIDE, 'sponsored');
       }
     }
   }
@@ -354,7 +355,13 @@
       if (post) { if (!SINGLE.test(location.pathname + location.search)) post.setAttribute(HIDE, 'sponsored'); continue; }
       // From the button up to the box that also holds the ad's link, then up to the ad's whole box (stops before the next ad).
       const linked = climb(menu, (p) => !p.querySelector('a[href]')).parentElement;
-      if (linked && linked !== document.body) strip(linked, 12).setAttribute(HIDE, 'sponsored');
+      if (!linked || linked === document.body) continue;
+      const box = strip(linked, 12);
+      box.setAttribute(HIDE, 'sponsored');
+      // The ads' list sits beside a "Sponsored" heading: when that is the section's only heading, hide the whole section with it.
+      const section = climb(box, (p) => !p.querySelector(HEADINGS)).parentElement;
+      const hs = section.querySelectorAll(HEADINGS);
+      if (section !== document.body && hs.length === 1 && squash(hs[0].textContent) === 'sponsored') section.setAttribute(HIDE, 'sponsored');
     }
   }
 
@@ -365,7 +372,8 @@
   // The listing's box: the biggest wrapper around its link that holds no other listing.
   const cardOf = (link, id, main) => climb(link, (p) => p !== main &&
     ![...p.querySelectorAll('a[href*="/marketplace/item/"]')].some((a) => itemId(a.href) !== id));
-  let handled = new WeakSet(); // listing links already dealt with
+  let handled = new WeakSet(); // links already dealt with
+  const adLabel = (card) => [...card.querySelectorAll('span, div')].some((s) => /^(ad|sponsored)$/.test(squash(s.textContent)));
 
   function marketplace() {
     if (!location.pathname.startsWith('/marketplace')) return;
@@ -381,7 +389,7 @@
       if (!id) continue;
       const card = cardOf(link, id, main);
       const why = hiddenItems.has(id) ? 'listing'
-        : settings.mpSponsored && [...card.querySelectorAll('span')].some((s) => squash(s.textContent) === 'sponsored') ? 'sponsored'
+        : settings.mpSponsored && adLabel(card) ? 'sponsored'
           : rules && !mpKeep(card.textContent, rules) ? 'search-rule' : null;
       if (why) { card.setAttribute(HIDE, why); continue; }
       if (!settings.marketplace || card.querySelector('.fbt-x')) continue;
@@ -399,6 +407,16 @@
       });
       card.setAttribute('data-fbt-card', '');
       card.appendChild(x);
+    }
+    // Ad tiles: they link outside Facebook instead of to a listing, and carry a small "Ad" label.
+    // Both are required, so a website link in a seller's description never hides the listing.
+    if (!settings.mpSponsored) return;
+    for (const a of main.querySelectorAll('a[href]')) {
+      if (handled.has(a) || a.closest(`[${HIDE}]`)) continue;
+      handled.add(a);
+      if (/(^|\.)facebook\.com$/.test(hostOf(a.href))) continue;
+      const card = cardOf(a, null, main);
+      if (adLabel(card)) card.setAttribute(HIDE, 'sponsored');
     }
   }
 
