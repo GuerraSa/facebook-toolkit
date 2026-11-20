@@ -17,7 +17,7 @@ Everything can be switched on or off in the settings. **(on)** means it starts s
 Hidden things disappear completely. Nothing is deleted or reported: switch a feature off and they come straight back. A single post or reel you open yourself, from a link or a notification, is never hidden.
 
 ### News feed
-- **Sponsored posts and ads (on):** in the feed, on profiles and Pages, in groups and search, and in the right-hand column. This includes the ads where Facebook scrambles the word "Sponsored" to dodge blockers.
+- **Sponsored posts and ads (on):** in the feed, on profiles and Pages, in groups and search, and in the right-hand column. This includes the ads where Facebook scrambles the word "Sponsored" to dodge blockers, and ads that don't show the word at all.
 - **Suggested profiles (on):** "People you may know" and "Suggested for you" posts.
 - **Suggested groups (on):** "Suggested groups" boxes, plus posts from groups you haven't joined (the ones with a **Join** button).
 - **Reels (on):** "Reels and short videos" boxes and posts that are reels.
@@ -42,7 +42,7 @@ Hidden things disappear completely. Nothing is deleted or reported: switch a fea
 
 ### Marketplace
 - **Hide button (on):** every listing gets a **✕** in its top-right corner. Click it and that listing is hidden for good, even after you reload or come back days later. To bring hidden listings back, open the settings and click **Show my N hidden listings again**.
-- **Sponsored listings (on)** are hidden.
+- **Sponsored listings and ad tiles (on)** are hidden, so the grid shows only real listings.
 - **Search rules:** type them into Marketplace's own search box. `"floor lamp"` keeps only titles with those words, `-broken` hides titles with that word, and `in:austin` keeps only listings in that place. For example: `"floor lamp" -broken in:austin`. Facebook still searches for the whole text, so start with a plain word search and add rules after it.
 
 ### Videos

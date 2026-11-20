@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Facebook Toolkit
 // @namespace    https://github.com/GuerraSa/facebook-toolkit
-// @version      1.0.0
+// @version      1.1.0
 // @description  A calmer Facebook: hides ads, suggestions, reels, Meta AI and your own filters; cleaner links, video controls, a Marketplace hide button, break reminders and colors.
 // @author       GuerraSa
 // @match        *://*.facebook.com/*
@@ -344,6 +344,20 @@
     }
   }
 
+  // Any ad, anywhere: its ⋯ button is labelled "Open menu for <advertiser> sponsored content", even when the word "Sponsored" is not shown.
+  const AD_MENU = '[aria-label$=" sponsored content" i]';
+  function ads() {
+    if (!(location.pathname.startsWith('/marketplace') ? settings.mpSponsored : settings.sponsored)) return;
+    for (const menu of document.querySelectorAll(AD_MENU)) {
+      if (menu.closest(`[${HIDE}]`)) continue;
+      const post = menu.closest(POSTS);
+      if (post) { if (!SINGLE.test(location.pathname + location.search)) post.setAttribute(HIDE, 'sponsored'); continue; }
+      // From the button up to the box that also holds the ad's link, then up to the ad's whole box (stops before the next ad).
+      const linked = climb(menu, (p) => !p.querySelector('a[href]')).parentElement;
+      if (linked && linked !== document.body) strip(linked, 12).setAttribute(HIDE, 'sponsored');
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Marketplace: hide button, sponsored listings, search rules
   // ---------------------------------------------------------------------------
@@ -535,6 +549,7 @@
     hidePosts();
     marketplace();
     rightRail();
+    ads();
     for (const root of roots) if (root?.isConnected) scanBits(root);
     if (settings.cleanLinks) cleanAddress();
     showBreak();

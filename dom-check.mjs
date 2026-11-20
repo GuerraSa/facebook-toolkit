@@ -29,6 +29,9 @@ window.GM_addStyle = (c) => document.head.appendChild(Object.assign(document.cre
 const post = (id, inner) => `<div id="${id}"><div aria-posinset="1" role="article"><h4><a href="/someone">Someone</a></h4>${inner}<p>body</p></div></div>`;
 const comment = (text) => `<div role="article" aria-label="Comment by Friend"><a href="/friend">Friend</a><span>${text}</span></div>`;
 const comment2 = (text) => `<div role="article"><a href="/friend">Friend</a><span>${text}</span></div>`; // no label: caught only by nesting
+// Shaped like a real right-column ad (Nov 2026): no "Sponsored" text, only the labelled ⋯ button beside the ad's link.
+const ad = (who, href = 'https://shop.example/?ad_id=1') => `<div><div data-visualcompletion="ignore-dynamic"><div><div><a href="${href}" target="_blank"><span>Advertiser</span><img alt=""><span>Great deal from ${who}</span><div>shop.example</div></a>` +
+  `<div><div><span><div role="button" aria-label="Open menu for ${who} sponsored content"><svg></svg></div></span></div></div></div></div></div></div>`;
 const LONG = 'A long story about my weekend at the lake with the whole family';
 const FEED = `<!doctype html><html><head><style>.h{display:none}</style></head><body>
 <div role="main">
@@ -56,9 +59,11 @@ ${post('linked', '<a href="https://l.facebook.com/l.php?u=https%3A%2F%2Fnews.exa
 <div id="short1"><div aria-posinset="3" role="article"><div id="c1"><h4><a href="/ann">Ann Lee</a></h4><span>3h</span><p>Nice view!</p><div id="row1"><span>Ask Meta AI</span><div role="button"><span>Where is this place?</span></div><div role="button"><span>What mountain is this?</span></div></div><div role="button" aria-label="Like"><span>Like</span></div></div></div></div>
 <div id="short2"><div aria-posinset="4" role="article"><div id="c2"><h4><a href="/bo">Bo Kim</a></h4><span>1h</span><p>So true</p><div id="row2"><span>Are you interested in this post?</span><div role="button"><span>Yes</span></div><div role="button"><span>No</span></div></div><div role="button" aria-label="Like"><span>Like</span></div></div></div></div>
 ${post('keyed','<a href="/groups/1/posts/42/">2h</a><p>Garden club meets on Sunday</p>')}
+${post('adpost', ad('Bike Co', 'https://bikes.example/'))}
 ${post('pic','<svg id="avatar" width="40" height="40"><image href="x.png" width="40" height="40"></image></svg>')}
 </div></div>
 <div role="complementary"><div id="rr-ads"><h3>Sponsored</h3><a href="https://ad.example/">Ad one</a></div><div id="rr-bdays"><h3>Birthdays</h3><span>Ann</span></div></div>
+<div class="rail"><div id="ad1">${ad('Lamp Co')}</div><div id="ad2">${ad('Shoe Co')}</div><div id="contacts"><h3>Contacts</h3><a href="/ann">Ann</a></div></div>
 <a id="ext" target="_blank" href="https://l.facebook.com/l.php?u=https%3A%2F%2Fexample.org%2F%3Fa%3D1%26fbclid%3Dx&amp;h=AT0">ext</a>
 <a id="int" href="/someone?__cft__[0]=abc&amp;__tn__=R&amp;id=5">int</a>
 <div id="player"><div><video id="vid"></video><div id="overlay"></div></div></div>
@@ -66,7 +71,7 @@ ${post('pic','<svg id="avatar" width="40" height="40"><image href="x.png" width=
 </body></html>`;
 const card = (n, title = 'Item', extra = '') => `<div class="cell"><div><a href="/marketplace/item/${n}/?ref=x"><img alt=""><span>$${n}</span><span>${title}</span>${extra}</a></div></div>`;
 const MP = `<!doctype html><html><head></head><body><div role="main"><div class="grid">${card(111)}${card(222)}${card(333)}</div></div></body></html>`;
-const MP_SEARCH = `<!doctype html><html><head></head><body><div role="main"><div class="grid">${card(1, 'Red floor lamp')}${card(2, 'Broken floor lamp')}${card(3, 'Chair')}${card(4, 'Floor lamp', '<span>Sponsored</span>')}</div></div></body></html>`;
+const MP_SEARCH = `<!doctype html><html><head></head><body><div role="main"><div class="grid">${card(1, 'Red floor lamp')}${card(2, 'Broken floor lamp')}${card(3, 'Chair')}${card(4, 'Floor lamp', '<span>Sponsored</span>')}<div class="cell" id="mpad">${ad('Lamp Co')}</div></div></div></body></html>`;
 const MP_ONE = `<!doctype html><html><head></head><body><div role="main"><div class="grid">${card(111)}</div></div></body></html>`;
 const PAGES = { '/marketplace/search': MP_SEARCH, '/marketplace/one': MP_ONE, '/marketplace/': MP };
 
@@ -79,6 +84,8 @@ const CHECKS = [
       'Join group hidden': h('group') === 'groups', 'reel hidden': h('reel') === 'reels', 'words in comments ignored': h('comments') === null,
       'comments ignored when the post is not an article': h('plain') === null, 'words in replies ignored': h('replies') === null,
       'right-column ads hidden': h('rr-ads') === 'sponsored', 'rest of right column kept': h('rr-bdays') === null,
+      'post with an ad menu hidden': document.querySelector('#adpost [aria-posinset]').getAttribute('data-fbt-hide') === 'sponsored',
+      'unlabelled side ads hidden one by one': h('ad1') === 'sponsored' && h('ad2') === 'sponsored' && h('contacts') === null,
       'interest prompt hidden, post kept': h('prompt') === 'prompt' && h('prompted') === null,
       'Meta AI row hidden, post kept': h('aiq') === 'meta-ai' && h('aiqpost') === null,
       'short post: only its Meta AI row hidden': h('row1') === 'meta-ai' && h('c1') === null && h('short1') === null,
@@ -95,7 +102,7 @@ const CHECKS = [
     p.querySelectorAll('input')[0].checked = false; p.querySelector('.fbt-save').click();
     r['panel closes on Save'] = !document.getElementById('fbt-panel');
     r['settings saved'] = __store.settings.sponsored === false && JSON.stringify(__store.settings.phrases) === '["giveaway time"]';
-    r['sponsored posts shown again'] = h('spons1') === null && h('late') === null;
+    r['sponsored posts and ads shown again'] = h('spons1') === null && h('late') === null && h('ad1') === null && !document.querySelector('#adpost [data-fbt-hide]');
     r['phrase post hidden'] = h('phrase') === 'phrase';
     r['other categories still hidden'] = h('reel') === 'reels';
     return r;`],
@@ -146,7 +153,7 @@ const CHECKS = [
     return r;`],
   ['A post opened from a link is never hidden', '/groups/1/posts/9/', '', `
     const h = (id) => document.getElementById(id).getAttribute('data-fbt-hide');
-    return { 'group post with Join kept': h('group') === null, 'sponsored and reel posts kept': h('spons1') === null && h('reel') === null };`],
+    return { 'group post with Join kept': h('group') === null, 'sponsored and reel posts kept': h('spons1') === null && h('reel') === null && !document.querySelector('#adpost [data-fbt-hide]') };`],
   ['Start page', '/',`__store.settings = { startPage: 'marketplace' };`, `
     return { 'fresh visit to home opens Marketplace': location.pathname === '/marketplace/' };`],
   ['Marketplace: hide button, remembered, works across tabs', '/marketplace/', '', `
@@ -173,7 +180,7 @@ const CHECKS = [
   ['Marketplace: sponsored listings and search rules', '/marketplace/search?query=%22floor%20lamp%22%20-broken', `__store.settings = { mpRules: true };`, `
     const h = (n) => document.querySelectorAll('.cell')[n].getAttribute('data-fbt-hide');
     return { 'matching listing kept': h(0) === null, '-broken hides it': h(1) === 'search-rule', '"floor lamp" hides others': h(2) === 'search-rule',
-      'sponsored listing hidden': h(3) === 'sponsored' };`],
+      'sponsored listing hidden': h(3) === 'sponsored', 'ad tile (no listing link) hidden': h(4) === 'sponsored' };`],
 ];
 
 const server = createServer((req, res) => {
