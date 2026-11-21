@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Facebook Toolkit
 // @namespace    https://github.com/GuerraSa/facebook-toolkit
-// @version      1.1.1
+// @version      1.1.2
 // @description  A calmer Facebook: hides ads, suggestions, reels, Meta AI and your own filters; cleaner links, video controls, a Marketplace hide button, break reminders and colors.
 // @author       GuerraSa
 // @match        *://*.facebook.com/*
+// @exclude      *://business.facebook.com/*
 // @run-at       document-start
 // @noframes
 // @grant        GM_getValue

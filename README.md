@@ -73,6 +73,7 @@ Settings are stored by Tampermonkey in your browser. They don't sync between com
 
 - Facebook changes its pages often. If something stops being hidden, or a normal post goes missing, please [open an issue](https://github.com/GuerraSa/facebook-toolkit/issues) and say what kind of post it was.
 - It works on the English version of Facebook only. It recognizes things by the words Facebook shows ("Sponsored", "People you may know", and so on).
+- It does not run on Meta Business Suite (business.facebook.com).
 - Ads inside the Reels player aren't skipped.
 - Many feature ideas come from [Hushfacebook](https://github.com/SysAdminDoc/Hushfacebook), a mod for the Facebook Android app. This script is written separately for the website; no code is shared.
 
